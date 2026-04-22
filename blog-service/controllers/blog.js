@@ -12,7 +12,7 @@ export const createBlog = async (req, res, next) => {
     const newBlog = new Blog({
       title,
       content,
-      image,
+      image,userId: req.user.id
     });
 
     await newBlog.save();
@@ -41,36 +41,63 @@ export const getBlogs = async (req, res, next) => {
   }
 };
 
+//loggedin user can view his blogs
+export const getMyBlogs = async (req, res) => {
+  try {
+    const blogs = await Blog.find({ userId: req.user.id }).sort({ createdAt: -1 });
+     res.status(200).json({
+      success: true,
+      data: myBlogs,
+    });
+  } catch (err) {
+    res.status(500).json({success: false, message: err.message });
+  }
+};
+
+// to view a blog
 export const getBlogById = async (req, res, next) => {
   const { id } = req.params;
+
   try {
     const blog = await Blog.findById(id);
+
     if (!blog) {
       return res.status(404).json({ message: "Blog not found" });
     }
+
     res.status(200).json({
       success: true,
       data: blog,
     });
+
   } catch (err) {
-    next(err);
-    res.status(500).json({ success: false, message: "failed to fetch blog for " + id });
+    next(err); 
   }
 };
 
+
+//only owner can update and delete 
 export const updateBlog = async (req, res, next) => {
   const { id } = req.params;
-  const { title, content, image } = req.body;   
+  const { title, content, image } = req.body;
 
   try {
+    const blog = await Blog.findById(id);
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    if (blog.userId.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to update this blog" });
+    }
+
     const updatedBlog = await Blog.findByIdAndUpdate(
       id,
       { title, content, image },
       { new: true }
     );
-    if (!updatedBlog) {
-      return res.status(404).json({ message: "Blog not found" });
-    }
+
     res.status(200).json({
       success: true,
       data: updatedBlog,
@@ -78,24 +105,33 @@ export const updateBlog = async (req, res, next) => {
 
   } catch (error) {
     next(error);
-    res.status(500).json({ success: false, message: "failed to update blog for " + id });
   }
 };
 
+
 export const deleteBlog = async (req, res, next) => {
   const { id } = req.params;
+
   try {
-    const deletedBlog = await Blog.findByIdAndDelete(id);
-    if (!deletedBlog) {
+    const blog = await Blog.findById(id);
+
+    if (!blog) {
       return res.status(404).json({ message: "Blog not found" });
     }
+
+    // 🔒 Ownership check
+    if (blog.userId.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to delete this blog" });
+    }
+
+    await Blog.findByIdAndDelete(id);
+
     res.status(200).json({
       success: true,
       message: "Blog deleted successfully",
     });
+
   } catch (error) {
     next(error);
-    res.status(500).json({ success: false, message: "failed to delete blog for " + id });
   }
 };
-

@@ -22,7 +22,7 @@ app.use(cors({
 }));
 
 // Routes
-app.use("/api", authRoutes);
+app.use("/api/auth", authRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
