@@ -1,5 +1,6 @@
 import Blog  from "../models/blog.js";
-
+import TOPICS from "../kafka/topics.js";
+import { publishEvent } from "../kafka/producer.js";
 
 export const createBlog = async (req, res, next) => {
   const { title, content, image } = req.body;
@@ -16,6 +17,14 @@ export const createBlog = async (req, res, next) => {
     });
 
     await newBlog.save();
+
+    await publishEvent(TOPICS.BLOG_CREATED, {
+  event: 'blog.created',
+  blogId: newBlog._id,
+  title: newBlog.title,
+  userId: newBlog.userId,
+  authorEmail: req.user.email,   // from your verifyToken middleware
+});
 
     res.status(201).json({
       success: true,
@@ -36,7 +45,6 @@ export const getBlogs = async (req, res, next) => {
     });
   } catch (err) {
     next(err);
-        res.status(500).json({ success: false, message: "failed to fetch blogs " });
 
   }
 };
@@ -98,6 +106,14 @@ export const updateBlog = async (req, res, next) => {
       { new: true }
     );
 
+    await publishEvent(TOPICS.BLOG_UPDATED, {
+  event: 'blog.updated',
+  blogId: updatedBlog._id,
+  title: updatedBlog.title,
+  userId: updatedBlog.userId,
+  authorEmail: req.user.email,
+});
+
     res.status(200).json({
       success: true,
       data: updatedBlog,
@@ -125,6 +141,13 @@ export const deleteBlog = async (req, res, next) => {
     }
 
     await Blog.findByIdAndDelete(id);
+
+    await publishEvent(TOPICS.BLOG_DELETED, {
+  event: 'blog.deleted',
+  blogId: blog._id,
+  userId: req.user.id,
+  authorEmail: req.user.email,
+});
 
     res.status(200).json({
       success: true,

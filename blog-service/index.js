@@ -4,12 +4,12 @@ import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { connectProducer } from "./kafka/producer.js";  // ✅ import
+
 
 dotenv.config();
 
 const PORT = process.env.PORT || 3002;
-
-connectDB();
 
 
 const app = express();
@@ -30,6 +30,18 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message || err });
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
-});
+const start = async () => {
+  try {
+    await connectDB();           
+    await connectProducer();     
+    
+    app.listen(PORT, () => {
+      console.log(`Auth service running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error("Failed to start auth-service:", err);
+    process.exit(1);  
+  }
+};
+
+start();

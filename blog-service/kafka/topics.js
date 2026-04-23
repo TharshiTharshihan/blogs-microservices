@@ -1,7 +1,9 @@
 // All Kafka topic names in one place.
 // If you rename a topic, change it here only.
 const TOPICS = {
-  USER_REGISTERED: 'user.registered',
+  BLOG_CREATED: 'blog.created',
+  BLOG_UPDATED: 'blog.updated',
+  BLOG_DELETED: 'blog.deleted',
 };
 
 export default TOPICS;

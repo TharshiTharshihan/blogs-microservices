@@ -4,6 +4,8 @@ import authRoutes from "./routes/auth.js";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
 import cors from "cors";
+import { connectProducer } from "./kafka/producer.js";  // ✅ import
+
 dotenv.config();
 
 const PORT = process.env.PORT || 3001;
@@ -29,6 +31,20 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message || err });
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
-});
+// ✅ wrap everything in async start function
+const start = async () => {
+  try {
+    await connectDB();           // ✅ connect MongoDB first
+    await connectProducer();     // ✅ then connect Kafka producer
+    
+    app.listen(PORT, () => {
+      console.log(`Auth service running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error("Failed to start auth-service:", err);
+    process.exit(1);  // ✅ crash loudly if startup fails
+  }
+};
+
+start();
+

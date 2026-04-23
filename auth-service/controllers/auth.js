@@ -1,6 +1,8 @@
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import TOPICS from "../kafka/topics.js";
+import { publishEvent } from "../kafka/producer.js";
 
 // REGISTER
 export const signup = async (req, res, next) => {
@@ -40,7 +42,16 @@ export const signup = async (req, res, next) => {
       password: hashedPassword,
     });
 
+
+
     await newUser.save();
+        // inside your signup function, after User.create():
+await publishEvent(TOPICS.USER_REGISTERED, {
+  event: 'user.registered',
+  userId: newUser._id,
+  email: newUser.email,
+  name: newUser.username,
+});
 
     res.status(201).json({
       success: true,
