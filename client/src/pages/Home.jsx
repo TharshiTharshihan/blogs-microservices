@@ -1,6 +1,6 @@
 // src/pages/Home.js
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 //import BlogCard from '../components/BlogCard';
 
 const Home = () => {
@@ -11,7 +11,7 @@ const Home = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const res = await fetch('http://localhost:3002/api/blog/'); // 👈 your API
+        const res = await fetch("/api/blog/"); // 👈 your API
         const data = await res.json();
 
         if (!res.ok) {
@@ -20,10 +20,10 @@ const Home = () => {
 
         setBlogs(data.data);
       } catch (err) {
-        setError('Failed to load blogs. Is the backend running?');
-        console.log('====================================');
-        console.log( "Error is: ", err);
-        console.log('====================================');
+        setError("Failed to load blogs. Is the backend running?");
+        console.log("====================================");
+        console.log("Error is: ", err);
+        console.log("====================================");
       } finally {
         setLoading(false);
       }
@@ -33,28 +33,42 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0a0a1a] text-gray-200">
-
+    <div className="min-h-screen bg-[#ffffff] text-gray-200">
       {/* HERO SECTION */}
-      <div className="bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] border-b border-[#e94560] px-6 py-20 text-center">
+      <div className="bg-gradient-to-br from-[#39c4ce] via-[#16213e] to-[#0f3460] border-b border-[#e94560] px-6 py-20 text-center">
         <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
-          Welcome to <span className="text-[#e94560]">BlogApp</span>
+          Welcome to <span className="text-[#B3EF1B]">BlogApp</span>
         </h1>
 
         <p className="text-gray-400 text-lg max-w-xl mx-auto mb-8">
           Discover stories, ideas, and expertise from writers everywhere.
         </p>
+
+        {/* ✅ Buttons properly placed */}
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Link
+            to="/login"
+            className="bg-[#B3EF1B] text-black px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+          >
+            Login
+          </Link>
+
+          <Link
+            to="/register"
+            className="border-2 border-[#B3EF1B] text-[#B3EF1B] px-6 py-3 rounded-full font-semibold hover:bg-[#B3EF1B] hover:text-white transition"
+          >
+            Register
+          </Link>
+        </div>
       </div>
 
       {/* BLOG SECTION */}
       <div className="max-w-3xl mx-auto px-5 py-10">
         <div className="flex justify-between items-center mb-7">
-          <h2 className="text-xl font-semibold text-white">
+          <h2 className="text-xl font-semibold text-black">
             📰 Latest Stories
           </h2>
-          <span className="text-sm text-gray-500">
-            {blogs.length} posts
-          </span>
+          <span className="text-sm text-gray-900">{blogs.length} posts</span>
         </div>
 
         {/* Loading */}
@@ -81,9 +95,16 @@ const Home = () => {
         {/* Blog List */}
         <div className="flex flex-col gap-6">
           {blogs.map((blog) => (
-            <div key={blog._id} className="bg-[#1a1a2e] border border-[#e94560] p-6 rounded-lg">
+            <div
+              key={blog._id}
+              className="bg-[#1a1a2e] border border-[#B3EF1B] p-6 rounded-lg"
+            >
               <h3 className="text-xl font-bold text-white">{blog.title}</h3>
-              <img src={blog.image} alt={blog.title} className="w-full h-auto mt-4" />
+              <img
+                src={blog.image}
+                alt={blog.title}
+                className="w-full h-auto mt-4"
+              />
               <p className="text-gray-400 mt-2">{blog.content}</p>
             </div>
           ))}

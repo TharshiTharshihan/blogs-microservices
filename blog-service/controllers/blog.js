@@ -26,7 +26,7 @@ export const createBlog = async (req, res, next) => {
   }
 };
 
-
+//get all
 export const getBlogs = async (req, res, next) => {
   try {
     const blogs = await Blog.find().sort({ createdAt: -1 });
@@ -41,13 +41,13 @@ export const getBlogs = async (req, res, next) => {
   }
 };
 
-//loggedin user can view his blogs
+//loggedin user can view his blogs only
 export const getMyBlogs = async (req, res) => {
   try {
     const blogs = await Blog.find({ userId: req.user.id }).sort({ createdAt: -1 });
      res.status(200).json({
       success: true,
-      data: myBlogs,
+      data: blogs,
     });
   } catch (err) {
     res.status(500).json({success: false, message: err.message });

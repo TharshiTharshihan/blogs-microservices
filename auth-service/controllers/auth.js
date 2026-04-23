@@ -1,4 +1,4 @@
-import User  from "../models/user.js";
+import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -65,31 +65,39 @@ export const login = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const validPassword = bcrypt.compareSync(
-      password,
-      validUser.password
-    );
+    const validPassword = bcrypt.compareSync(password, validUser.password);
 
     if (!validPassword) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign(
-      { id: validUser._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
     const { password: _, ...rest } = validUser._doc;
 
-    res
-      .cookie("access_token", token, {
+    res.cookie("access_token", token, {
         httpOnly: true,
         maxAge: 3600000,
+        sameSite: "lax",
       })
       .status(200)
       .json(rest);
   } catch (err) {
     next(err);
   }
+};
+
+// auth-service/src/controllers/authController.js
+
+export const logout = (req, res) => {
+  res
+    .clearCookie("access_token", {
+      httpOnly: true,
+      sameSite: "lax",
+      
+    })
+    .status(200)
+    .json({ message: "Logged out successfully" });
 };

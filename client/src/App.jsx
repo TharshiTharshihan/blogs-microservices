@@ -6,8 +6,10 @@ import {
   Navigate,
 } from "react-router-dom";
 import Home from "./pages/Home";
-// import Login from "./pages/Login";
-// import Register from "./pages/Register";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import CreateBlog from "./pages/CreateBlog";
 import "./App.css";
 
 function App() {
@@ -17,9 +19,10 @@ function App() {
           <Routes>
             {/* PUBLIC ROUTES */}
             <Route path="/" element={<Home />} />
-             {/* <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/blog/:id" element={<BlogDetail />} /> */}
+             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/my-blogs" element={<Dashboard />} />
+            <Route path="/create" element={<CreateBlog />} />
 
                 {/* PROTECTED ROUTES — Require authentication */}
                   {/* <Route

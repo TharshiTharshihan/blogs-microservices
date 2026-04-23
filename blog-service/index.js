@@ -3,6 +3,8 @@ import blogRoutes from "./routes/blog.js";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+
 dotenv.config();
 
 const PORT = process.env.PORT || 3002;
@@ -13,6 +15,7 @@ connectDB();
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(cors({
   origin: ["http://localhost:5173", "http://127.0.0.1:5173"],

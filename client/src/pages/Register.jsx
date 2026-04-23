@@ -1,19 +1,22 @@
-// src/pages/Register.js
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-//import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validationError, setValidationError] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const { register, loading, error, clearError, isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
+  // Check login (optional)
   useEffect(() => {
-    if (isLoggedIn) navigate('/');
-  }, [isLoggedIn, navigate]);
+    const token = localStorage.getItem("token");
+    if (token) navigate('/');
+  }, [navigate]);
+
+  const clearError = () => setError('');
 
   const handleChange = (e) => {
     clearError();
@@ -24,43 +27,68 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setError('');
+    setValidationError('');
+
     if (form.password !== confirmPassword) {
-      setValidationError('Passwords do not match');
-      return;
+      return setValidationError('Passwords do not match');
     }
 
     if (form.password.length < 6) {
-      setValidationError('Password must be at least 6 characters');
-      return;
+      return setValidationError('Password must be at least 6 characters');
     }
 
-    const success = await register(form);
-    if (success) navigate('/my-blogs');
+    try {
+      setLoading(true);
+
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      // Save token if your backend sends it
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      navigate('/my-blogs');
+
+    } catch (err) {
+      console.log("Error:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const displayError = validationError || error;
 
   return (
-    <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center px-5">
+    <div className="min-h-screen bg-[#222831] flex items-center justify-center px-5">
       <div className="w-full max-w-md bg-[#16213e] border border-[#0f3460] rounded-2xl p-10 shadow-2xl">
 
-        {/* Header */}
         <div className="text-center mb-7">
           <h1 className="text-white text-2xl font-bold mb-2">Create Account</h1>
           <p className="text-gray-400 text-sm">Join the writing community</p>
         </div>
 
-        {/* Error */}
         {displayError && (
           <div className="bg-[#2a0a0f] border border-[#e94560] text-[#e94560] px-4 py-3 rounded-lg mb-5 text-sm">
             ⚠️ {displayError}
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
-          {/* Username */}
           <div className="flex flex-col gap-2">
             <label className="text-gray-400 text-xs font-semibold">Username</label>
             <input
@@ -68,13 +96,11 @@ const Register = () => {
               name="username"
               value={form.username}
               onChange={handleChange}
-              placeholder="Choose a username"
               required
-              className="w-full px-4 py-3 bg-[#0a0a1a] border border-[#0f3460] rounded-lg text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]"
+              className="w-full px-4 py-3 bg-[#0a0a1a] border border-[#0f3460] rounded-lg text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#B3EF1B]"
             />
           </div>
 
-          {/* Email */}
           <div className="flex flex-col gap-2">
             <label className="text-gray-400 text-xs font-semibold">Email</label>
             <input
@@ -82,13 +108,11 @@ const Register = () => {
               name="email"
               value={form.email}
               onChange={handleChange}
-              placeholder="Enter your email"
               required
-              className="w-full px-4 py-3 bg-[#0a0a1a] border border-[#0f3460] rounded-lg text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]"
+              className="w-full px-4 py-3 bg-[#0a0a1a] border border-[#0f3460] rounded-lg text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#B3EF1B]"
             />
           </div>
 
-          {/* Password */}
           <div className="flex flex-col gap-2">
             <label className="text-gray-400 text-xs font-semibold">Password</label>
             <input
@@ -96,13 +120,11 @@ const Register = () => {
               name="password"
               value={form.password}
               onChange={handleChange}
-              placeholder="Min 6 characters"
               required
-              className="w-full px-4 py-3 bg-[#0a0a1a] border border-[#0f3460] rounded-lg text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]"
+              className="w-full px-4 py-3 bg-[#0a0a1a] border border-[#0f3460] rounded-lg text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#B3EF1B]"
             />
           </div>
 
-          {/* Confirm Password */}
           <div className="flex flex-col gap-2">
             <label className="text-gray-400 text-xs font-semibold">Confirm Password</label>
             <input
@@ -112,26 +134,23 @@ const Register = () => {
                 setValidationError('');
                 setConfirmPassword(e.target.value);
               }}
-              placeholder="Repeat your password"
               required
-              className="w-full px-4 py-3 bg-[#0a0a1a] border border-[#0f3460] rounded-lg text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]"
+              className="w-full px-4 py-3 bg-[#0a0a1a] border border-[#0f3460] rounded-lg text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#B3EF1B]"
             />
           </div>
 
-          {/* Button */}
           <button
             type="submit"
             disabled={loading}
-            className="bg-[#e94560] text-white py-3 rounded-lg font-bold text-sm hover:opacity-90 transition disabled:opacity-50"
+            className="bg-[#B3EF1B] text-[#030300] py-3 rounded-lg font-bold text-sm hover:opacity-90 transition disabled:opacity-50"
           >
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
 
-        {/* Footer */}
         <p className="text-center text-gray-400 text-sm mt-6">
           Already have an account?{' '}
-          <Link to="/login" className="text-[#e94560] font-semibold hover:underline">
+          <Link to="/login" className="text-[#eaf60a] font-semibold hover:underline">
             Sign in
           </Link>
         </p>
